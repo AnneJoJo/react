@@ -1,0 +1,629 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="./css/reset.css" />
+    <link rel="stylesheet" href="./css/demo.css" />
+    <!-- jqPagination styles -->
+    <link rel="stylesheet" href="./css/jqpagination.css" />
+    <!-- scripts -->
+    <!-- <script src="./js/jquery-1.7.2.min.js"></script> -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+
+    <script src="./js/jquery.jqpagination.js"></script>
+    <script src="./js/scripts.js"></script>
+    <script src="./js/demo.js"></script>
+
+    <!-- generic demo script -->
+
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script>
+       //globe var arr
+
+      var config = {
+          body: "",
+          method : 'GET',
+          url: 'https://api.themoviedb.org/3/movie/popular?api_key=4bef8838c2fd078bd13d7127d8dedcd4&language=en-US&page=1'
+      };
+      //var favList = [];
+      var likes = [];
+      var block = [];
+      var data_m = [];
+      var page_current = 1;
+      var data_detail = [];
+      var bages = ['badge badge-primary','badge badge-danger','badge badge-success','badge badge-secondary'];
+      var tmp_next_go =[];
+      var tmp_pre_go = [];
+      var data_next = [];
+
+      document.onreadystatechange = function () {
+        var state = document.readyState
+        if (state == 'complete') {
+
+            setTimeout(function(){
+                document.getElementById('load').style.visibility="hidden";
+                document.getElementById('main-convas').style.visibility="visible";
+            },1000);
+        }
+      }
+
+
+
+
+      window.onload = function(){
+        // ---------------navbar focus--------------------------------------
+          document.querySelector('.navbar-main').addEventListener('click', function() {
+            if  (event.target.className === 'flex-item-2'){
+                event.target.classList.add('class-line');
+                document.getElementsByClassName('flex-item-3')[0].classList.remove('class-line');
+                document.getElementsByClassName('flex-item-4')[0].classList.remove('class-line');
+              }
+
+            else if (event.target.className === 'flex-item-3'){
+                event.target.classList.add('class-line');
+                document.getElementsByClassName('flex-item-2')[0].classList.remove('class-line');
+                document.getElementsByClassName('flex-item-4')[0].classList.remove('class-line');
+            }
+
+            else if (event.target.className === 'flex-item-4'){
+                event.target.classList.add('class-line');
+                document.getElementsByClassName('flex-item-2')[0].classList.remove('class-line');
+                document.getElementsByClassName('flex-item-3')[0].classList.remove('class-line');
+            }
+
+          });
+
+
+        // --------------------------jqPagination event--------------------------------
+        var prepath = 'https://api.themoviedb.org/3/movie/popular?api_key=4bef8838c2fd078bd13d7127d8dedcd4&language=en-US&page=';
+        var content = document.getElementsByClassName('pagination')[0];
+        page_current = content.getElementsByClassName('current')[0].getAttribute('href').match(/\d+/g).map(Number);
+
+        content.addEventListener('click',function(){
+          //console.log(event.target)
+          if (event.target.className === 'previous'){
+              page_current = parseInt(event.target.getAttribute('href').match(/\d+/g).map(Number))+1;
+              var path = prepath+page_current;
+              config.url = path;
+          }
+
+          else if (event.target.className === 'next'){
+              page_current = event.target.getAttribute('href').match(/\d+/g).map(Number)-1;
+              var path = prepath+page_current;
+              config.url = path;
+          }
+          else if (event.target.className === 'first'){
+              page_current = 1;
+              var path = prepath+page_current;
+              config.url = path;
+          }
+          else if (event.target.className === 'last'){
+              page_current = 992;
+              var path = prepath+page_current;
+              config.url = path;
+          }
+          else{
+            if (event.target.getAttribute('href') != null){
+            page_current = event.target.getAttribute('href').match(/\d+/g).map(Number);
+            var path = prepath+page_current;
+            config.url = path;
+            }
+          }
+
+          requestHandler(config,function(Response){
+              var data = JSON.parse(Response);
+              var name = 'front-flex';
+              data_m = data.results;
+
+              loadData(data_m,name,"both",data_next)
+               // load all data
+          });
+
+        });
+
+          requestHandler(config,function(Response){
+              var data = JSON.parse(Response);
+              var name = 'front-flex';
+              data_m = data.results;
+              console.log(data_m);
+              loadData(data_m,name,"both",data_next)
+               // load all data
+          });
+          // config.url = prepath+(parseInt(page_current)+1).toString();
+          // requestHandler(config,function(Response){
+          //     var data = JSON.parse(Response);
+          //     var name = 'front-flex';
+          //     data_next = data.results;
+          //     // console.log(data_next);
+          //     // console.log(data_m)
+          //     loadData(data_m,name,"both",data_next)
+          //      // load all data
+          // });
+
+          //config.url = prepath+page_current;
+
+          // like list and block list event linstener
+          const parent_like = document.getElementById("flip-container");
+          parent_like.addEventListener('click',function(){
+          var tmp_id = event.target.getAttribute('id');
+          var tmp_title = event.target.getAttribute('name');
+          var tmp_path = event.target.getAttribute('img-path');
+          var tmp_date = event.target.getAttribute('date');
+          tmp_obj = {'id':tmp_id,'title':tmp_title,'poster_path':tmp_path,'release_date':tmp_date};
+          if (event.target.className === 'movie-item-like'){
+              event.target.style.color = 'pink';
+              block = block.filter(function(e){
+                  if (e.id != tmp_id){
+                    return true;
+                  }
+              });
+              if (!checkExist(tmp_id,likes)){
+                likes.push(tmp_obj);
+                //favList.push(tmp_id);
+              }
+              else{
+                alert("you have already like the item!")
+              }
+            //document.getElementsByClassName('sup-like')[0].innerHTML = likes.length
+            var bar = document.getElementById('like');
+            var sup = document.createElement('sup');
+            sup.setAttribute('class','sup-like');
+            sup.innerHTML = likes.length;
+            bar.innerHTML = "Like List "
+            bar.appendChild(sup);
+
+
+
+
+          //  document.getElementById('sup-like').innerHTML = likes.length;
+            if (block.length === 0){
+              document.getElementById('block').innerHTML = "";
+            }
+          }
+          else if(event.target.className === 'movie-item-block'){
+            event.target.style.color = 'pink';
+              if (!checkExist(tmp_id,block)){
+                  likes =likes.filter(function(e){
+                    if (e.id != tmp_id){
+                      return true;
+                  }
+              });
+                block.push(tmp_obj);
+              }
+              else{
+                alert("you have already block the item!")
+              }
+
+            document.getElementById('config').innerHTML = "";
+            //document.getElementById('block').innerHTML = "Block List: "+block.length;
+            //document.getElementsByClassName('sup-block')[0].innerHTML = block.length
+            var bar = document.getElementById('block');
+            var sup = document.createElement('sup');
+            sup.setAttribute('class','sup-block');
+            sup.innerHTML = block.length;
+            bar.innerHTML = "Block List "
+            bar.appendChild(sup);
+
+            //document.getElementById('like').innerHTML = "Like List: "+likes.length;
+
+            //document.getElementsByClassName('sup-like')[0].innerHTML = likes.length
+            var bar = document.getElementById('like');
+            var sup = document.createElement('sup');
+            sup.setAttribute('class','sup-like');
+            sup.innerHTML = likes.length;
+            bar.innerHTML = "Like List "
+            bar.appendChild(sup);
+
+            if (likes.length === 0){
+              document.getElementById('like').innerHTML = "";
+            }
+            reload();
+          }
+          else if (event.target.className==="load-img"){
+            var targetId = event.target.getAttribute('id');
+            var pathDetail = 'https://api.themoviedb.org/3/movie/'+targetId+'?api_key=4bef8838c2fd078bd13d7127d8dedcd4&language=en-US';
+
+            config.url = pathDetail;
+            console.log("bbb");
+            requestHandler(config,function(Response){
+                var data = JSON.parse(Response);
+                 data_detail = data;
+                 console.log(data);
+                 showDetails(data_detail);
+
+            });
+          }
+
+      });
+
+
+      };
+      //------------------show movie list-----------------------------------
+      function reload(){
+        //document.getElementById('main-convas').style.visibility="visible";
+        document.getElementById('page-bar').style.visibility = "visible";
+        document.getElementById('front-flex').style.display = "flex"
+        document.getElementsByClassName('flex-item-2')[0];
+        var parent = document.getElementById("front-flex");
+        parent.innerHTML = "";
+        var name = 'front-flex';
+        loadData(data_m,name,"both",data_next);
+        document.getElementById('config').innerHTML = "";
+        document.getElementById("back-flex").style.display = "none";
+
+        document.getElementById("drag-list").style.visibility = "hidden";
+
+
+      }
+      // ------------------------config---------------------------------
+      function myFavouriteFunction(listClass){
+        document.getElementById('drag-close-2').style.visibility="visible";
+
+        document.getElementById('clear-drag').style.visibility="visible";
+        document.getElementById('drag-list').style.visibility="visible";
+
+        document.getElementById("back-flex").style.display="none";
+        //document.getElementById("main-convas").style.opacity=0.01;
+        //enableDragSort("drag-sort-enable");
+        //clear original content first
+        var elem = document.getElementsByClassName("drag-sort-enable")[0];
+        elem.innerHTML = "";
+        var dragList= document.getElementsByClassName('drag-sort-enable')[0];
+        //listClass = "drag-sort-enable";
+
+        likes.forEach(function(e){
+          var li = document.createElement('LI');
+          li.setAttribute("class", "drag-bar");
+          li.setAttribute("draggable", "true");
+          li.setAttribute("id", e.id);
+          li.innerHTML = e.title;
+          dragList.appendChild(li);
+        });
+        function enableDragSort(listClass) {
+            //check();
+          const sortableLists = document.getElementsByClassName(listClass);
+          Array.prototype.map.call(sortableLists, (list) => {enableDragList(list)});
+        }
+
+        function enableDragList(list) {
+          Array.prototype.map.call(list.children, (item) => {enableDragItem(item)});
+
+        }
+
+        function enableDragItem(item) {
+          item.setAttribute('draggable', true)
+          item.ondrag = handleDrag;
+          item.ondragend = handleDrop;
+        }
+
+        function handleDrag(item) {
+          const selectedItem = item.target,
+                list = selectedItem.parentNode,
+                x = event.clientX,
+                y = event.clientY;
+
+          selectedItem.classList.add('drag-sort-active');
+          let swapItem = document.elementFromPoint(x, y) === null ? selectedItem : document.elementFromPoint(x, y);
+
+          if (list === swapItem.parentNode) {
+            swapItem = swapItem !== selectedItem.nextSibling ? swapItem : swapItem.nextSibling;
+            list.insertBefore(selectedItem, swapItem);
+          }
+          check();
+        }
+
+        function handleDrop(item) {
+          item.target.classList.remove('drag-sort-active');
+        }
+
+      (()=> {enableDragSort('drag-sort-enable')})();
+
+      //check the order after each drag event
+
+      //-------------------------------check order------------------------------------------
+
+      function check(){
+          var tmp_order = [];
+          //var favList_order = [];
+          var new_list = document.getElementsByClassName('drag-sort-enable')[0].querySelectorAll('LI');
+          console.log(document.getElementById('drag'));
+          for (let k=0;k < new_list.length;k++){
+            var n = new_list[k].id
+            likes.forEach(function(e){
+              if (e.id == n){
+                tmp_order.push(e)
+              }
+            });
+          }
+          console.log(tmp_order);
+          likes = tmp_order;
+          tmp_order = [];
+        }
+       };
+      // show the like list or block list
+      function listShow(flag){
+          var box;
+          if (flag == "like"){
+
+            box = likes;
+            //document.getElementById('config').innerHTML = "CONFIG: "+ likes.length;
+            var bar = document.getElementById('config');
+            var sup = document.createElement('sup');
+            sup.setAttribute('class','sup-like');
+            sup.innerHTML = likes.length;
+            bar.innerHTML = "CONFIG "
+            bar.appendChild(sup);
+
+          }
+          else{
+            box = block;
+            document.getElementById('config').innerHTML = "";
+          }
+          const parent = document.getElementById("back-flex");
+          parent.innerHTML = ""
+          var name = 'back-flex';
+          //console.log(box);
+          loadData(box,name,flag,data_next);
+          document.getElementById('page-bar').style.visibility = "hidden";
+          document.getElementById("front-flex").style.display = "none";
+          //document.getElementById("drag-list").style.visibility = "hidden";
+          document.getElementById("back-flex").style.display="flex";
+          document.getElementById("main-convas").style.visibility="visible";
+
+
+      }
+
+      // ask a request to api ajax
+      function requestHandler(config,cb){
+        var xhrRequest = new XMLHttpRequest();
+        xhrRequest.open(config.method,config.url);
+        xhrRequest.onload = function(e){
+            cb(e.target.response)
+        }
+        var body = config.method === "GET" ? config.body: undefined
+        //console.log(body);
+        xhrRequest.send(body);
+      };
+
+    function closeDrag(){
+
+      document.getElementById('clear-drag').style.visibility="hidden";
+      document.getElementById('drag-list').style.visibility="hidden";
+      document.getElementById('drag-close-2').style.visibility="hidden";
+
+        // document.getElementById("back-flex").style.display="flex";
+        // document.getElementById("main-convas").style.visibility = "visible";
+        // //document.getElementById("front-flex").style.display = "flex";
+        // document.getElementById("clear-drag").style.visibility = "hidden";
+        //document.getElementById("main-convas").style.opacity=1;
+        listShow('like');
+
+    }
+    function closeDetail(){
+      //document.getElementById("front-flex").style.display = "flex";
+      document.getElementById("main-convas").style.opacity = 1;
+      document.getElementById("detail-card").getElementsByClassName('poster')[0].innerHTML = "";
+    //  console.log(document.getElementById("detail-card").getElementsByClassName('content')[0].querySelectorAll('li'));
+      document.getElementById("detail-card").getElementsByClassName('content')[0].querySelectorAll('li').forEach(function(ele){ele.innerHTML=""})
+      //document.getElementById("detail-card").style.visibility = "hidden";
+      document.getElementById('cover-clear').style.visibility="hidden";
+      document.getElementById('detail-card').style.visibility="hidden";
+      document.getElementById('drag-close').style.visibility="hidden";
+
+
+    };
+
+    function checkExist(item,arry){
+      for (let i=0; i < arry.length;i++){
+        if (item == arry[i].id){
+          return true;
+        }
+      }
+      return false;
+    }
+    // set attributte
+    function setMovieCommon(tag,id,title,date,path){
+
+      tag.setAttribute('id',id);
+      tag.setAttribute('name',title);
+      tag.setAttribute('date',date);
+      tag.setAttribute('img-path',path);
+
+    }
+    // ----------------------load details--------------------
+    function showDetails(data){
+        //document.getElementById('flip-container').classList.add('control')
+
+        var prefix = "https://image.tmdb.org/t/p/w500/";
+        var path = prefix + data.poster_path;
+        var pro = data.production_companies;
+        //console.log(path);
+        var dcard = document.getElementById('detail-card');
+
+        dcard.style.backgroundImage = "url("+prefix+data.backdrop_path+")";
+        var poster = dcard.getElementsByClassName('poster')[0];
+        var con = dcard.getElementsByClassName('content')[0];
+        var img = document.createElement('img');
+        //var content = document.createElement('');
+        var title = document.getElementById('title')
+        var type = document.getElementById('type');
+        var overview = document.getElementById('overview');
+        var production = document.getElementById('icons');
+        //content.innerHTML += data.overview;
+
+        for (let i=0; i < data.genres.length;i++){
+          var p = document.createElement('P');
+          p.setAttribute('class',bages[i%bages.length]);
+          p.innerHTML+= data.genres[i].name + "  ";
+          type.appendChild(p);
+        }
+        for (let j=0; j < pro.length;j++){
+
+          if( pro[j].logo_path==null){
+            var pname = document.createElement('p');
+            //imgpro.scr = prefix + pro[j].name;
+            pname.innerHTML += pro[j].name;
+            production.appendChild(pname);
+          }
+          else{
+
+            var imgpro = document.createElement('img');
+            imgpro.setAttribute('src',prefix + pro[j].logo_path)
+            imgpro.setAttribute('class','pro-icon')
+            console.log(imgpro);
+            production.appendChild(imgpro);
+          }
+
+        }
+
+        img.src = path;
+        poster.appendChild(img);
+        console.log(data.overview);
+        title.innerHTML += data.original_title +"("+data.release_date.substr(0,4) +")"+'<br>';
+        overview.innerHTML +="overview: "+ data.overview;
+        //content balala ---
+        con.appendChild(title);
+        con.appendChild(type);
+        con.appendChild(overview);
+        con.appendChild(production);
+
+        document.getElementById('cover-clear').style.visibility="visible";
+        document.getElementById('detail-card').style.visibility="visible";
+        document.getElementById('drag-close').style.visibility="visible";
+    }
+   // ---------------------load data function------------------------------
+    function loadData(data_m,idname,flag,data_next){
+
+      var prefix = "https://image.tmdb.org/t/p/w500/";
+
+      var flex = document.getElementById(idname);
+      flex.innerHTML = "";
+      for (let i=0; i < data_m.length;i++){
+
+          if (checkExist(data_m[i].id,block) && flag != "block"){
+            continue;
+          }
+
+          var path = prefix + data_m[i].poster_path;
+          var title =  data_m[i].title;
+          var id = data_m[i].id;
+          var date = data_m[i].release_date;
+          var img = document.createElement('img');
+          img.src = path;
+          img.id = id;
+          img.setAttribute('class','load-img');
+          div = document.createElement('div');
+          var p1 = document.createElement('p');
+          var p2 = document.createElement('p');
+          p1.innerHTML = 'Like it!'
+          p2.innerHTML = 'block it!'
+          if (flag == "both"){
+
+            p1.setAttribute('class','movie-item-like');
+            p2.setAttribute('class','movie-item-block');
+            setMovieCommon(p1,id,title,date,data_m[i].poster_path);
+            setMovieCommon(p2,id,title,date,data_m[i].poster_path);
+            div.setAttribute('class','movie-item-flex');
+            div.appendChild(p1);
+            div.appendChild(p2);
+            div.appendChild(img);
+            div.innerHTML += title.substr(0,14)+"<br>";
+            div.innerHTML += date;
+            flex.appendChild(div);
+          }
+          else if (flag =="block") {
+            //var p1 = document.createElement('p');
+            //p1.innerHTML = 'Like it!'
+            p1.setAttribute('class','movie-item-like');
+            setMovieCommon(p1,id,title,date,data_m[i].poster_path);
+            div.setAttribute('class','movie-item-flex');
+            div.appendChild(p1);
+            div.appendChild(img);
+            div.innerHTML += title.substr(0,14)+"<br>";
+            div.innerHTML += date;
+            flex.appendChild(div);
+
+          }
+
+          else{
+
+            //var p2 = document.createElement('p');
+            //p2.innerHTML = 'block it!'
+            p2.setAttribute('class','movie-item-block');
+            setMovieCommon(p2,id,title,date,data_m[i].poster_path);
+            div.setAttribute('class','movie-item-flex');
+            div.appendChild(p2);
+            div.appendChild(img);
+            div.innerHTML += title.substr(0,14)+"<br>";
+            div.innerHTML += date;
+            flex.appendChild(div);
+          }
+      }
+    };
+    </script>
+  </head>
+  <body>
+    <div id="load"></div>
+    <div id = "main-convas" style="visibility:hidden">
+      <nav class="navbar-main">
+        <ul class="flex-navbar-left">
+          <li class="flex-item-1"><img src="./css/movie.png" style="width:25px;height:25px"></li>
+          <li class="flex-item-2" onClick="reload()">Movie List</li>
+          <li class="flex-item-3" id="like" onClick="listShow('like')"><sup class="sup-like"></sup></li>
+          <li class="flex-item-4" id="block" onClick="listShow('block')"><sup class="sup-block"></sup></li>
+        </ul>
+        <ul class="flex-navbar-right">
+          <li class="flex-item-right" id = "config" onClick="myFavouriteFunction('drag-sort-enable')"></li>
+        </ul>
+      </nav>
+    <hr>
+    <h4>The most popular movies</h4>
+      <div id="flip-container">
+        <nav id="page-bar">
+          <div class="pagination">
+            <a href="#" class="first" data-action="first">&laquo;</a>
+            <a href="#" class="previous" data-action="previous">P</a>
+            <input href="#" class="current" type="text" readonly="readonly" data-max-page="992" />
+            <a href="#" class="next" data-action="next">N</a>
+            <a href="#" class="last" data-action="last">&raquo;</a>
+          </div>
+        </nav>
+        <div id = "front-flex">
+        </div>
+        <div id ="back-flex">
+        </div>
+      </div>
+
+  </div>
+  <div id="cover-clear">
+
+    <div id="detail-card">
+
+      <div id="pic-back">
+
+      <!-- <div class="drag-close" onclick="close()"><img src="./css/Close-icon-31.png" style="width:50px;height:50px"></div> -->
+      <div class = "poster"></div>
+      <div class = "content">
+        <li id="title"size=></li>
+        <li id="type"></li>
+        <li id="overview"></li>
+        <li id="icons"></li>
+      </div>
+
+    </div>
+
+    </div>
+    <li id="drag-close" onclick="closeDetail()"><img src="./css/Close-icon-31.png" style="width:50px;height:50px"></li>
+  </div>
+  <div id="clear-drag">
+  <div id = drag-list>
+     <ul id="drag" class="drag-sort-enable">
+    </ul>
+  </div>
+    <li id ="drag-close-2" onclick="closeDrag()"><img src="./css/Close-icon-31.png" style="width:50px;height:50px"></li>
+</div>
+  </body>
+</html>
